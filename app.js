@@ -73,3 +73,22 @@ function afficherPanier(){
 // LANCEMENT
 afficherProduits();
 afficherPanier();
+
+// BOUTON WHATSAPP
+document.getElementById('btn-commander').addEventListener('click', () => {
+  if(panier.length === 0) return alert("Ton panier est vide !");
+  
+  let message = "Slt KINSHOP, je veux commander:%0A";
+  let total = 0;
+  
+  panier.forEach(p => {
+    message += `- ${p.nom} x${p.quantite} (${p.prix * p.quantite}$)%0A`;
+    total += p.prix * p.quantite;
+  });
+  
+  message += `%0ATotal: ${total}$%0AAdresse de livraison: `;
+  
+  // Remplace par ton numéro WhatsApp
+  let numero = "243972153392"; 
+  window.open(`https://wa.me/${numero}?text=${message}`, "_blank");
+});
