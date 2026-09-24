@@ -7,14 +7,11 @@ const produits = [
   { id: 6, nom: "Maillot PSG", prix: 33, image: "images/WhatsApp Image 2026-09-21 at 17.15.46 (1).jpeg" }
 ];
 
-// On charge le panier sauvegardé ou on crée un vide
 let panier = JSON.parse(localStorage.getItem('kinshop')) || [];
-
 const container = document.getElementById('liste-produits');
 const compteurSpan = document.getElementById('compteur');
 const panierDetail = document.getElementById('panier-detail');
 
-// AFFICHAGE PRODUITS
 function afficherProduits(){
   container.innerHTML = "";
   produits.forEach(p => {
@@ -29,20 +26,14 @@ function afficherProduits(){
   });
 }
 
-// LOGIQUE PANIER
 function ajouterAuPanier(id){
-  // 1. Est-ce que le produit est déjà dans le panier ?
   let produitDansPanier = panier.find(p => p.id === id);
-
   if(produitDansPanier){
-    // Si oui -> on augmente juste la quantité
     produitDansPanier.quantite++;
   } else {
-    // Si non -> on le trouve dans le stock et on l'ajoute avec quantite = 1
     let produitStock = produits.find(p => p.id === id);
     panier.push({ ...produitStock, quantite: 1 });
   }
-  
   sauvegarder();
 }
 
@@ -51,44 +42,55 @@ function sauvegarder(){
   afficherPanier();
 }
 
+// UNE SEULE FOIS, avec les boutons
 function afficherPanier(){
   let total = 0;
   let totalQte = 0;
   panierDetail.innerHTML = "<h3>Ton Panier</h3>";
-
   if(panier.length === 0){
     panierDetail.innerHTML += "<p>Vide</p>";
   }
-
   panier.forEach(p => {
     total += p.prix * p.quantite;
     totalQte += p.quantite;
-    panierDetail.innerHTML += `<p>${p.nom} x${p.quantite} = ${p.prix * p.quantite}$</p>`;
+    panierDetail.innerHTML += `
+      <p>${p.nom} x${p.quantite} = ${p.prix * p.quantite}$ 
+        <button onclick="changerQte(${p.id}, -1)">-</button>
+        <button onclick="changerQte(${p.id}, 1)">+</button>
+        <button onclick="supprimer(${p.id})" style="background:red; color:white;">X</button>
+      </p>`;
   });
-
   compteurSpan.textContent = totalQte;
   if(total > 0) panierDetail.innerHTML += `<strong>Total: ${total}$</strong>`;
 }
 
-// LANCEMENT
+function changerQte(id, valeur){
+  let prod = panier.find(p => p.id === id);
+  prod.quantite += valeur;
+  if(prod.quantite <= 0){
+    supprimer(id);
+  } else {
+    sauvegarder();
+  }
+}
+
+function supprimer(id){
+  panier = panier.filter(p => p.id !== id);
+  sauvegarder();
+}
+
 afficherProduits();
 afficherPanier();
 
-// BOUTON WHATSAPP
 document.getElementById('btn-commander').addEventListener('click', () => {
   if(panier.length === 0) return alert("Ton panier est vide !");
-  
   let message = "Slt KINSHOP, je veux commander:%0A";
   let total = 0;
-  
   panier.forEach(p => {
     message += `- ${p.nom} x${p.quantite} (${p.prix * p.quantite}$)%0A`;
     total += p.prix * p.quantite;
   });
-  
   message += `%0ATotal: ${total}$%0AAdresse de livraison: `;
-  
-  // Remplace par ton numéro WhatsApp
   let numero = "243972153392"; 
   window.open(`https://wa.me/${numero}?text=${message}`, "_blank");
 });
